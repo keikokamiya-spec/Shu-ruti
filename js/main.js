@@ -3,9 +3,9 @@
 /* ========================
    Header — scroll class
 ======================== */
-const header = document.querySelector('header');
+const header = document.getElementById('site-header');
 window.addEventListener('scroll', () => {
-    header.classList.toggle('scrolled', window.scrollY > 40);
+    header.classList.toggle('scrolled', window.scrollY > 60);
 }, { passive: true });
 
 /* ========================
@@ -15,15 +15,30 @@ const toggle = document.getElementById('mobile-menu-toggle');
 const navMenu = document.getElementById('nav-menu');
 
 toggle.addEventListener('click', () => {
-    toggle.classList.toggle('active');
-    navMenu.classList.toggle('open');
+    const isOpen = navMenu.classList.toggle('open');
+    toggle.classList.toggle('active', isOpen);
+    toggle.setAttribute('aria-expanded', isOpen);
 });
 
-// Close menu on nav link click
 navMenu.querySelectorAll('.nav-link').forEach(link => {
     link.addEventListener('click', () => {
-        toggle.classList.remove('active');
         navMenu.classList.remove('open');
+        toggle.classList.remove('active');
+        toggle.setAttribute('aria-expanded', 'false');
+    });
+});
+
+/* ========================
+   Smooth Scroll for anchor links
+======================== */
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', e => {
+        const target = document.querySelector(anchor.getAttribute('href'));
+        if (!target) return;
+        e.preventDefault();
+        const offset = 72; // header height
+        const top = target.getBoundingClientRect().top + window.scrollY - offset;
+        window.scrollTo({ top, behavior: 'smooth' });
     });
 });
 
@@ -31,51 +46,14 @@ navMenu.querySelectorAll('.nav-link').forEach(link => {
    Reveal on Scroll
 ======================== */
 const revealEls = document.querySelectorAll('.reveal');
-const observer = new IntersectionObserver(entries => {
+const revealObserver = new IntersectionObserver(entries => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
             entry.target.classList.add('visible');
-            observer.unobserve(entry.target);
+            revealObserver.unobserve(entry.target);
         }
     });
-}, { threshold: 0.12 });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
 
-revealEls.forEach(el => observer.observe(el));
+revealEls.forEach(el => revealObserver.observe(el));
 
-/* ========================
-   Gallery Slider
-======================== */
-const track = document.querySelector('.gallery-track');
-const slides = document.querySelectorAll('.gallery-slide');
-const prevBtn = document.querySelector('.gallery-btn.prev');
-const nextBtn = document.querySelector('.gallery-btn.next');
-
-if (track && slides.length > 0) {
-    let current = 0;
-    const total = slides.length;
-
-    function goTo(index) {
-        current = (index + total) % total;
-        track.style.transform = `translateX(-${current * 100}%)`;
-    }
-
-    prevBtn.addEventListener('click', () => goTo(current - 1));
-    nextBtn.addEventListener('click', () => goTo(current + 1));
-
-    // Auto-advance every 5 seconds
-    let autoPlay = setInterval(() => goTo(current + 1), 5000);
-
-    // Pause on hover
-    track.closest('.gallery-wrap').addEventListener('mouseenter', () => clearInterval(autoPlay));
-    track.closest('.gallery-wrap').addEventListener('mouseleave', () => {
-        autoPlay = setInterval(() => goTo(current + 1), 5000);
-    });
-
-    // Touch swipe support
-    let startX = 0;
-    track.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
-    track.addEventListener('touchend', e => {
-        const diff = startX - e.changedTouches[0].clientX;
-        if (Math.abs(diff) > 40) goTo(current + (diff > 0 ? 1 : -1));
-    }, { passive: true });
-}
