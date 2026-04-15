@@ -828,13 +828,23 @@ footer {
         overflow-x: auto;
         scroll-snap-type: x mandatory;
         gap: 16px;
-        padding: 0 24px 20px;
+        padding: 0 24px 24px;
         margin: 0 -24px;
-        grid-template-columns: none; /* Reset grid */
-        -ms-overflow-style: none;
-        scrollbar-width: none;
+        grid-template-columns: none;
+        /* Enable subtle scrollbar to hint at more content */
+        -webkit-overflow-scrolling: touch;
     }
-    .gallery-grid::-webkit-scrollbar { display: none; }
+    .gallery-grid::-webkit-scrollbar {
+        height: 3px;
+    }
+    .gallery-grid::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        margin: 0 24px;
+    }
+    .gallery-grid::-webkit-scrollbar-thumb {
+        background: var(--accent);
+        border-radius: 3px;
+    }
     .gallery-item {
         flex: 0 0 82%;
         scroll-snap-align: center;
